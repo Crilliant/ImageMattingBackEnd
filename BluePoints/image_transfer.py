@@ -37,8 +37,8 @@ def download_image():
         print(url)
         return url
     else:
-        #return jsonify({'status': 'wait', 'time': 5})
-        return filepath
+        return jsonify({'status': 'wait', 'time': 5})
+
 
 @bp.route('/delete')
 def delete_image():
