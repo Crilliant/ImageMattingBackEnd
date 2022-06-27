@@ -44,7 +44,7 @@ def img_matting(img_path, mask_dir, matted_dir):
     for i in range(0, result.shape[0]):  # 访问所有行
         for j in range(0, result.shape[1]):  # 访问所有列
             if mask[i][j] < 100:
-                result[i, j, 3] = 255
+                result[i, j, 3] = 0
     cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
     print(pure_img_name + " is finished.")
 
