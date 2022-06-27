@@ -26,6 +26,24 @@ def get_img_and(img_path, mask_path):
     return result, mask
 
 
+# 切割主要部分
+def get_main_body(image, mask):
+    th, mask = cv.threshold(mask, 100, 255, cv.THRESH_BINARY)
+    (borders, features) = cv.findContours(mask.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    border = sorted(borders, key=cv.contourArea, reverse=True)[0]
+
+    rect = cv.minAreaRect(border)
+    box = np.int0(cv.boxPoints(rect))
+
+    Xs = [i[0] for i in box]
+    Ys = [i[1] for i in box]
+    x_min = min(Xs)
+    x_max = max(Xs)
+    y_min = min(Ys)
+    y_max = max(Ys)
+    return image[y_min:y_max, x_min:x_max]
+
+
 # 识别单张图片（路径imp_path）显著物体，并保存到meetter_dir
 # mask_dir为黑白掩码保存的目录
 def img_matting(img_path, mask_dir, matted_dir):
@@ -45,6 +63,7 @@ def img_matting(img_path, mask_dir, matted_dir):
         for j in range(0, result.shape[1]):  # 访问所有列
             if mask[i][j] < 100:
                 result[i, j, 3] = 0
+    result = get_main_body(result, mask)
     cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
     print(pure_img_name + " is finished.")
 
