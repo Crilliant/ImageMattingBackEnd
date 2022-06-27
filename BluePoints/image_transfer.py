@@ -49,7 +49,7 @@ def download_image():
         if os.path.exists(filepath):
             url = 'http://' + request.headers.get('host') + '/static/Download/' + filename
             print(url)
-            return url
+            return jsonify({'status': 'success', 'url': url})
         else:
             return jsonify({'status': 'wait', 'time': 5})
     except Exception as err:
