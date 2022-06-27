@@ -43,14 +43,17 @@ def get_segmentation_image():
 
 @bp.route('/download', methods=['POST', 'GET'])
 def download_image():
-    filename = request.get_json().get('filename')
-    filepath = os.path.join(image_download_path, filename)
-    if os.path.exists(filepath):
-        url = 'http://' + request.headers.get('host') + '/static/Download/' + filename
-        print(url)
-        return url
-    else:
-        return jsonify({'status': 'wait', 'time': 5})
+    try:
+        filename = request.get_json().get('filename')
+        filepath = os.path.join(image_download_path, filename)
+        if os.path.exists(filepath):
+            url = 'http://' + request.headers.get('host') + '/static/Download/' + filename
+            print(url)
+            return url
+        else:
+            return jsonify({'status': 'wait', 'time': 5})
+    except Exception as err:
+        return jsonify({'status': 'failed', 'message': str(err)})
 
 
 @bp.route('/delete')
