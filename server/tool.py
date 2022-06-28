@@ -49,8 +49,6 @@ def get_main_body(image, mask):
 def img_matting(img_path, mask_dir, matted_dir):
     u2net.inference_img(img_path, mask_dir)
     print("finish the inference")
-    if not os.path.exists(matted_dir):
-        os.makedirs(matted_dir)
 
     pure_img_name = get_filename(img_path)
 
@@ -86,33 +84,6 @@ def get_identification_image(img_path, mask_dir, matted_dir):
     result = change_backcolor(result, mask, value=[0, 0, 255, 255])
     cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
     print(pure_img_name + "color changed.")
-
-
-# met一个文件夹的图片
-def img_matting_dir(img_dir, mask_dir, matted_dir):
-    if not os.path.exists(matted_dir):
-        os.makedirs(matted_dir)
-
-    for file in os.listdir(img_dir):
-        pure_img_name = file.split('.')[-2] + '.png'
-
-        if not os.path.exists(os.path.join(mask_dir, pure_img_name)):
-            print("no exist" + os.path.join(mask_dir, pure_img_name))
-            continue
-        print(pure_img_name + " is being met...")
-        img = cv.imread(os.path.join(img_dir, file))
-        mask = cv.imread(os.path.join(mask_dir, pure_img_name))
-
-        result = cv.bitwise_and(img, mask)  # 必须是相同通道数
-        mask = cv.cvtColor(mask, cv.COLOR_BGR2GRAY)  # 灰度图
-        result = cv.cvtColor(result, cv.COLOR_BGR2BGRA)  # 4通道
-
-        for i in range(0, result.shape[0]):  # 访问所有行
-            for j in range(0, result.shape[1]):  # 访问所有列
-                if mask[i][j] < 100:
-                    result[i, j, 3] = 0
-        cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
-        print(file + " is finished.")
 
 
 # 水彩

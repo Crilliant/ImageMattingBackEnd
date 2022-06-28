@@ -6,7 +6,7 @@ import datetime
 import random
 
 
-bp = Blueprint('transfer', __name__, url_prefix='/api/image')
+bp = Blueprint('image_transfer', __name__, url_prefix='/api/image')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'JPG', 'PNG'}
 executor = ThreadPoolExecutor()
 
