@@ -1,38 +1,17 @@
-import os
 import time
 
 from flask import Blueprint, request, jsonify
 from config import *
 from concurrent.futures import ThreadPoolExecutor
 from server.tool import *
-import datetime
-import random
 from threading import Thread
+from utils import *
 
 
-bp = Blueprint('image_transfer', __name__, url_prefix='/api/image')
+bp = Blueprint('segmentation_transfer', __name__, url_prefix='/api/image')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'JPG', 'PNG'}
 executor = ThreadPoolExecutor(2)
 thread_maps = dict()
-
-
-# 判断是否是允许的文件类型
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1) in ALLOWED_EXTENSIONS
-
-
-# 产生随机数作为文件名
-def generate_image_name():
-    now_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    rand = random.randint(0, 1000)
-    if rand < 10:
-        rand = str(00) + str(rand)
-    elif rand < 100:
-        rand = str(0) + str(rand)
-    else:
-        rand = str(rand)
-
-    return now_time + rand + '.png'
 
 
 # 线程池中线程的回调函数
