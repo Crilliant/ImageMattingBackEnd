@@ -5,11 +5,10 @@ from config import *
 from concurrent.futures import ThreadPoolExecutor
 from server.tool import *
 from threading import Thread
-from utils import *
+from BluePoints.utils import *
 
 
 bp = Blueprint('segmentation_transfer', __name__, url_prefix='/api/image')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'JPG', 'PNG'}
 executor = ThreadPoolExecutor(2)
 thread_maps = dict()
 
@@ -31,6 +30,7 @@ def delete_download(filename):
     while True:
         if os.path.exists(os.path.join(image_download_path, filename)):
             os.remove(os.path.join(image_download_path, filename))
+            thread_maps.pop(filename)
             return
         time.sleep(5)
 
@@ -89,10 +89,10 @@ def delete_image():
     try:
         if feature.cancel():
             os.remove(os.path.join(image_upload_path, filename))
+            thread_maps.pop(filename)
         else:
-            Thread(target=delete_download, args=filename).start()
+            Thread(target=delete_download, args=(filename, )).start()
 
-        thread_maps.pop(filename)
         return jsonify({'status': 'success'})
     except Exception as err:
         return jsonify({'status': 'failed', 'message': str(err)})

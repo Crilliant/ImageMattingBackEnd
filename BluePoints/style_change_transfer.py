@@ -3,7 +3,7 @@ from config import *
 from concurrent.futures import ThreadPoolExecutor
 from server.tool import watercolor
 from threading import Thread
-from utils import *
+from BluePoints.utils import *
 
 
 bp = Blueprint('style_change_transfer', __name__, url_prefix='/api/style')
