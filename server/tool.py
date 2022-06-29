@@ -52,9 +52,6 @@ def img_matting(img_path, mask_dir, matted_dir):
 
     pure_img_name = get_filename(img_path)
 
-    if not os.path.exists(os.path.join(mask_dir, pure_img_name)):
-        print("no exist" + os.path.join(mask_dir, pure_img_name))
-
     print(pure_img_name + " is being met...")
     result, mask = get_img_and(img_path, os.path.join(mask_dir, pure_img_name))
     for i in range(0, result.shape[0]):  # 访问所有行
@@ -86,29 +83,15 @@ def get_identification_image(img_path, mask_dir, matted_dir):
     print(pure_img_name + "color changed.")
 
 
-# 水彩
-def watercolor(img_dir, mask_dir, save_dir):
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-
-    for file in os.listdir(img_dir):
-        pure_img_name = file.split('.')[-2] + '.png'
-        if not os.path.exists(os.path.join(mask_dir, pure_img_name)):
-            print("no exist" + os.path.join(mask_dir, pure_img_name))
-            continue
-        img = cv.imread(os.path.join(img_dir, file))
-        result = cv.stylization(img, sigma_s=60, sigma_r=0.6)
-        mask = cv.imread(os.path.join(mask_dir, pure_img_name))
-        result = cv.bitwise_and(result, mask)
-        mask = cv.cvtColor(mask, cv.COLOR_BGR2GRAY)  # 灰度图
-        result = cv.cvtColor(result, cv.COLOR_BGR2BGRA)  # 4通道
-
-        for i in range(0, result.shape[0]):  # 访问所有行
-            for j in range(0, result.shape[1]):  # 访问所有列
-                if mask[i][j] < 100:
-                    result[i, j, 3] = 1
-        cv.imwrite(os.path.join(save_dir, pure_img_name), result)
-        print(file + " is finished.")
+# 水彩化
+def watercolor(img_path, save_dir):
+    pure_img_name = get_filename(img_path)
+    print(pure_img_name)
+    img = cv.imread(img_path)
+    result = cv.stylization(img, sigma_s=60, sigma_r=0.6)
+    print(save_dir)
+    cv.imwrite(os.path.join(save_dir, pure_img_name), result)
+    print(pure_img_name + " is finished.")
 
 
 # 油画，弃用
@@ -158,13 +141,3 @@ def overlap(top_path, btm_path, save_dir):
                 top[i][j][3] = 255
 
     cv.imwrite(os.path.join(save_dir, img_name), top)
-
-
-if __name__ == "__main__":
-    filename_test = 'wallpaper.png'
-    '/home/mloser/Program/Python/ImageMatting/back/static/'
-    file_path = os.path.join('/home/mloser/Program/Python/ImageMatting/back/static/Upload', filename_test)
-    mask_path = os.path.join('/home/mloser/Program/Python/ImageMatting/back/static/Mask')
-    save_path = os.path.join('/home/mloser/Program/Python/ImageMatting/back/static/Download')
-    # executor.submit(img_metting, file_path, mask_path, save_path)
-    get_identification_image(file_path, mask_path, save_path)

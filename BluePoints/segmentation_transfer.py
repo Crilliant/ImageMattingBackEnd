@@ -1,10 +1,6 @@
-import time
-
 from flask import Blueprint, request, jsonify
-from config import *
 from concurrent.futures import ThreadPoolExecutor
 from server.tool import *
-from threading import Thread
 from BluePoints.utils import *
 
 
@@ -23,16 +19,6 @@ def call_back(feature):
     if os.path.exists(os.path.join(image_mask_path, str(filename))):
         os.remove(os.path.join(image_mask_path, str(filename)))
         print('--------------------remove mask-------------------')
-
-
-# 删除已处理的图片的线程目标
-def delete_download(filename):
-    while True:
-        if os.path.exists(os.path.join(image_download_path, filename)):
-            os.remove(os.path.join(image_download_path, filename))
-            thread_maps.pop(filename)
-            return
-        time.sleep(5)
 
 
 @bp.route('/identification', methods=['POST'])
@@ -83,23 +69,10 @@ def download_image():
 
 
 @bp.route('/delete', methods=['POST'])
-def delete_image():
-    filename = request.get_json().get('filename')
-    feature = thread_maps.get(filename)
+def delete():
     try:
-        if feature.cancel():
-            os.remove(os.path.join(image_upload_path, filename))
-            thread_maps.pop(filename)
-        else:
-            Thread(target=delete_download, args=(filename, )).start()
-
+        filename = request.get_json().get('filename')
+        Thread(target=delete_image, args=(filename, thread_maps)).start()
         return jsonify({'status': 'success'})
     except Exception as err:
         return jsonify({'status': 'failed', 'message': str(err)})
-
-
-if __name__ == '__main__':
-    test_filename = 'wallpaper.png'
-    file_path = os.path.join(image_upload_path, test_filename)
-    print(image_mask_path)
-    executor.submit(img_matting(file_path, image_mask_path, image_download_path))

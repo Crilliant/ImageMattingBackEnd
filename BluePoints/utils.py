@@ -1,5 +1,9 @@
 import datetime
 import random
+from config import *
+from threading import Thread
+import time
+
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'JPG', 'PNG'}
 
@@ -21,3 +25,22 @@ def generate_image_name():
         rand = str(rand)
 
     return now_time + rand + '.png'
+
+
+# 删除已处理的图片的线程目标
+def delete_download(filename, thread_maps):
+    while True:
+        if os.path.exists(os.path.join(image_download_path, filename)):
+            os.remove(os.path.join(image_download_path, filename))
+            thread_maps.pop(filename)
+            return
+        time.sleep(5)
+
+
+def delete_image(filename, thread_maps):
+    feature = thread_maps.get(filename)
+    if feature.cancel():
+        os.remove(os.path.join(image_upload_path, filename))
+        thread_maps.pop(filename)
+    else:
+        Thread(target=delete_download, args=(filename, thread_maps)).start()
