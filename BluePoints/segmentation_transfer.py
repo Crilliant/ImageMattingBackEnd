@@ -15,7 +15,7 @@ def call_back(feature):
     print('==================' + str(filename) + '-----------------------------------------------')
     if os.path.exists(os.path.join(image_upload_path, str(filename))):
         os.remove(os.path.join(image_upload_path, str(filename)))
-        print('--------------------remove upload----------------------')
+        print('--------------------回调 remove upload----------------------')
     if os.path.exists(os.path.join(image_mask_path, str(filename))):
         os.remove(os.path.join(image_mask_path, str(filename)))
         print('--------------------remove mask-------------------')

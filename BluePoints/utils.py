@@ -1,4 +1,5 @@
 import datetime
+import os
 import random
 from config import *
 from threading import Thread
@@ -40,7 +41,6 @@ def delete_download(filename, thread_maps):
 def delete_image(filename, thread_maps):
     feature = thread_maps.get(filename)
     if feature.cancel():
-        os.remove(os.path.join(image_upload_path, filename))
         thread_maps.pop(filename)
     else:
         Thread(target=delete_download, args=(filename, thread_maps)).start()
