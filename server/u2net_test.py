@@ -16,6 +16,9 @@ import glob
 from server.data_loader import RescaleT, ToTensor, ToTensorLab, SalObjDataset
 from server.model import U2NET, U2NETP  # full size version 173.6 MB
 
+# from data_loader import RescaleT, ToTensor, ToTensorLab, SalObjDataset
+# from model import U2NET, U2NETP  # full size version 173.6 MB
+
 
 # from model import U2NETP    # small version u2net 4.7 MB
 
@@ -25,6 +28,12 @@ def normPRED(d):
     mi = torch.min(d)
 
     dn = (d - mi) / (ma - mi)
+    for i in range(dn.shape[1]-1):
+        for j in range(dn.shape[2]-1):
+            if dn[0][i][j] > 0.8:
+                dn[0][i][j] = 1
+            else:
+                dn[0][i][j] = 0
 
     return dn
 
@@ -36,23 +45,19 @@ def save_output(image_name, pred, d_dir):
     predict_np = predict.cpu().data.numpy()
 
     im = Image.fromarray(predict_np * 255).convert('RGB')
-    img_name = image_name.split(os.sep)[-1]  # os.sep()分隔符/
     image = io.imread(image_name)  # 读取图像rgb格式
     imo = im.resize((image.shape[1], image.shape[0]), resample=Image.BILINEAR)
 
     pb_np = np.array(imo)
 
-    # aaa = img_name.split(".")
-    # bbb = aaa[0:-1]  # 正序，不算最后一个
-    # imidx = bbb[0]
-    # for i in range(1, len(bbb)):
-    #     imidx = imidx + "." + bbb[i]
+
     pure_img_name = os.path.basename(image_name)
     pure_img_name = pure_img_name.split('.')[-2] + ".png"
 
     imo.save(d_dir + "/" + pure_img_name)
 
 
+# 单张图片，生成掩码png
 def inference_img(img_path, save_dir):
     # --------- 1. get image path and name ---------
     # model_name='u2net'
@@ -115,7 +120,8 @@ def inference_img(img_path, save_dir):
 
         # normalization
         pred = d1[:, 0, :, :]
-        pred = normPRED(pred)
+        pred = normPRED(pred)   # 概率均匀映射到[0, 1]
+
 
         # save results to test_results folder
         if not os.path.exists(prediction_dir):
@@ -127,4 +133,4 @@ def inference_img(img_path, save_dir):
 
 if __name__ == "__main__":
     # torch.backends.cudnn.benchmark = True
-    inference_img()
+    inference_img(r'E:\Code\ImageMatting\BackEnd\server\test_data/test_images/alask.png', r'E:\Code\ImageMatting\BackEnd\server\test_data\mytest')
