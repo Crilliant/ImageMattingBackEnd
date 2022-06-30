@@ -26,18 +26,31 @@ def get_img_and(img_path, mask_path):
     return result, mask
 
 
+# 切割主要部分
+def get_main_body(image, mask):
+    th, mask = cv.threshold(mask, 100, 255, cv.THRESH_BINARY)
+    (borders, features) = cv.findContours(mask.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    border = sorted(borders, key=cv.contourArea, reverse=True)[0]
+
+    rect = cv.minAreaRect(border)
+    box = np.int0(cv.boxPoints(rect))
+
+    Xs = [i[0] for i in box]
+    Ys = [i[1] for i in box]
+    x_min = min(Xs)
+    x_max = max(Xs)
+    y_min = min(Ys)
+    y_max = max(Ys)
+    return image[y_min:y_max, x_min:x_max]
+
+
 # 识别单张图片（路径imp_path）显著物体，并保存到meetter_dir
 # mask_dir为黑白掩码保存的目录
 def img_matting(img_path, mask_dir, matted_dir):
     u2net.inference_img(img_path, mask_dir)
     print("finish the inference")
-    if not os.path.exists(matted_dir):
-        os.makedirs(matted_dir)
 
     pure_img_name = get_filename(img_path)
-
-    if not os.path.exists(os.path.join(mask_dir, pure_img_name)):
-        print("no exist" + os.path.join(mask_dir, pure_img_name))
 
     print(pure_img_name + " is being met...")
     result, mask = get_img_and(img_path, os.path.join(mask_dir, pure_img_name))
@@ -45,6 +58,7 @@ def img_matting(img_path, mask_dir, matted_dir):
         for j in range(0, result.shape[1]):  # 访问所有列
             if mask[i][j] < 100:
                 result[i, j, 3] = 0
+    result = get_main_body(result, mask)
     cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
     print(pure_img_name + " is finished.")
 
@@ -69,46 +83,15 @@ def get_identification_image(img_path, mask_dir, matted_dir):
     print(pure_img_name + "color changed.")
 
 
-# mat一个文件夹的图片
-def img_matting_dir(img_dir, mask_dir, matted_dir):
-    if not os.path.exists(matted_dir):
-        os.makedirs(matted_dir)
-
-    for file in os.listdir(img_dir):
-        pure_img_name = file.split('.')[-2] + '.png'
-
-        if not os.path.exists(os.path.join(mask_dir, pure_img_name)):
-            print("no exist" + os.path.join(mask_dir, pure_img_name))
-            continue
-        print(pure_img_name + " is being met...")
-        img = cv.imread(os.path.join(img_dir, file))
-        mask = cv.imread(os.path.join(mask_dir, pure_img_name))
-
-        result = cv.bitwise_and(img, mask)  # 必须是相同通道数
-        mask = cv.cvtColor(mask, cv.COLOR_BGR2GRAY)  # 灰度图
-        result = cv.cvtColor(result, cv.COLOR_BGR2BGRA)  # 4通道
-
-        for i in range(0, result.shape[0]):  # 访问所有行
-            for j in range(0, result.shape[1]):  # 访问所有列
-                if mask[i][j] < 100:
-                    result[i, j, 3] = 0
-        cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
-        print(file + " is finished.")
-
-
-# 水彩
-def watercolor(img_dir, save_dir):
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-
-    for file in os.listdir(img_dir):
-        pure_img_name = get_filename(file)
-        img = cv.imread(os.path.join(img_dir, file))
-        # result = cv.stylization(img, sigma_s=60, sigma_r=0.6)
-        result = cv.stylization(img, sigma_s=30, sigma_r=0.5)
-
-        cv.imwrite(os.path.join(save_dir, pure_img_name), result)
-        print(file + " is finished.")
+# 水彩化
+def watercolor(img_path, save_dir):
+    pure_img_name = get_filename(img_path)
+    print(pure_img_name)
+    img = cv.imread(img_path)
+    result = cv.stylization(img, sigma_s=60, sigma_r=0.6)
+    print(save_dir)
+    cv.imwrite(os.path.join(save_dir, pure_img_name), result)
+    print(pure_img_name + " is finished.")
 
 
 
