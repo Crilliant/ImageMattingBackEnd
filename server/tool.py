@@ -3,18 +3,10 @@
 # @Author : Cao Yuxin
 # @File : tool.py
 
-import os
 import numpy as np
-from PIL import Image
-import glob
 import cv2 as cv
 import server.u2net_test as u2net
-
-
-def get_filename(img_path):
-    pure_img_name = os.path.basename(img_path)
-    pure_img_name = pure_img_name.split('.')[-2] + ".png"
-    return pure_img_name
+from server.utils import *
 
 
 def get_img_and(img_path, mask_path):
@@ -35,16 +27,18 @@ def get_main_body(image, mask):
     rect = cv.minAreaRect(border)
     box = np.int0(cv.boxPoints(rect))
 
-    Xs = [i[0] for i in box]
-    Ys = [i[1] for i in box]
-    x_min = min(Xs)
-    x_max = max(Xs)
-    y_min = min(Ys)
-    y_max = max(Ys)
+    # noinspection PyTypeChecker
+    xs = [i[0] for i in box]
+    # noinspection PyTypeChecker
+    ys = [i[1] for i in box]
+    x_min = min(xs)
+    x_max = max(xs)
+    y_min = min(ys)
+    y_max = max(ys)
     return image[y_min:y_max, x_min:x_max]
 
 
-# 识别单张图片（路径imp_path）显著物体，并保存到meetter_dir
+# 识别单张图片（路径imp_path）显著物体
 # mask_dir为黑白掩码保存的目录
 def img_matting(img_path, mask_dir, matted_dir):
     u2net.inference_img(img_path, mask_dir)
@@ -81,17 +75,6 @@ def get_identification_image(img_path, mask_dir, matted_dir):
     result = change_backcolor(result, mask, value=[0, 0, 255, 255])
     cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
     print(pure_img_name + "color changed.")
-
-
-# 水彩化
-def watercolor(img_path, save_dir):
-    pure_img_name = get_filename(img_path)
-    print(pure_img_name)
-    img = cv.imread(img_path)
-    result = cv.stylization(img, sigma_s=60, sigma_r=0.6)
-    print(save_dir)
-    cv.imwrite(os.path.join(save_dir, pure_img_name), result)
-    print(pure_img_name + " is finished.")
 
 
 # 油画，弃用
@@ -136,7 +119,7 @@ def overlap(top_path, btm_path, save_dir):
     print(btm.shape)
     for i in range(0, top.shape[0]):  # 访问所有行
         for j in range(0, top.shape[1]):  # 访问所有列
-            if (top[i][j][3] == 0):
+            if top[i][j][3] == 0:
                 top[i][j][:3] = btm[i][j][:3]
                 top[i][j][3] = 255
 
