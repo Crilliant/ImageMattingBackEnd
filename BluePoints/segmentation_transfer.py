@@ -47,7 +47,7 @@ def get_segmentation_image():
         feature = executor.submit(img_matting, image_path, image_mask_path, image_download_path)
         feature.add_done_callback(call_back)
         thread_maps.update({new_filename: feature})
-        print('----------------------------add maps---------------------')
+        print('----------------------------add maps---------------------' + new_filename)
         return jsonify({'status': 'success', 'message': new_filename})
     except Exception as err:
         return jsonify({'status': 'failed', 'message': str(err)})
@@ -72,6 +72,7 @@ def download_image():
 def delete():
     try:
         filename = request.get_json().get('filename')
+        print('++++++++++++++++' + filename)
         Thread(target=delete_image, args=(filename, thread_maps)).start()
         return jsonify({'status': 'success'})
     except Exception as err:

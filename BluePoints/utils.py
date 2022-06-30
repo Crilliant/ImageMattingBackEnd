@@ -39,7 +39,8 @@ def delete_download(filename, thread_maps):
 
 def delete_image(filename, thread_maps):
     feature = thread_maps.get(filename)
-    if feature.cancel():
-        thread_maps.pop(filename)
-    else:
-        Thread(target=delete_download, args=(filename, thread_maps)).start()
+    if feature is not None:
+        if feature.cancel():
+            thread_maps.pop(filename)
+        else:
+            Thread(target=delete_download, args=(filename, thread_maps)).start()

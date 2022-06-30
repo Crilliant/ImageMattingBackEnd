@@ -41,20 +41,24 @@ def get_main_body(image, mask):
 # 识别单张图片（路径imp_path）显著物体
 # mask_dir为黑白掩码保存的目录
 def img_matting(img_path, mask_dir, matted_dir):
-    u2net.inference_img(img_path, mask_dir)
-    print("finish the inference")
+    print('---------------------start----------------')
+    try:
+        u2net.inference_img(img_path, mask_dir)
+        print("finish the inference")
 
-    pure_img_name = get_filename(img_path)
+        pure_img_name = get_filename(img_path)
 
-    print(pure_img_name + " is being met...")
-    result, mask = get_img_and(img_path, os.path.join(mask_dir, pure_img_name))
-    for i in range(0, result.shape[0]):  # 访问所有行
-        for j in range(0, result.shape[1]):  # 访问所有列
-            if mask[i][j] < 100:
-                result[i, j, 3] = 0
-    result = get_main_body(result, mask)
-    cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
-    print(pure_img_name + " is finished.")
+        print(pure_img_name + " is being met...")
+        result, mask = get_img_and(img_path, os.path.join(mask_dir, pure_img_name))
+        for i in range(0, result.shape[0]):  # 访问所有行
+            for j in range(0, result.shape[1]):  # 访问所有列
+                if mask[i][j] < 100:
+                    result[i, j, 3] = 0
+        result = get_main_body(result, mask)
+        cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
+        print(pure_img_name + " is finished.")
+    except Exception as err:
+        print(str(err))
 
 
 # 根据mask将背景色换为value值
