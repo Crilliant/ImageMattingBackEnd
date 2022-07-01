@@ -18,10 +18,17 @@ def watercolor(img_path, save_dir):
 def sketch(img_path, save_dir):
     gray_img = cv.cvtColor(cv.imread(img_path), cv.COLOR_BGR2GRAY)
     filename = get_filename(img_path)
-    gray_img = cv.GaussianBlur(gray_img, (5, 5), 0)
-    image_sobel_x = cv.Sobel(gray_img, cv.CV_64F, 1, 0, ksize=3)
-    image_sobel_y = cv.Sobel(gray_img, cv.CV_64F, 0, 1, ksize=3)
-    image_sobel_xy = np.abs(image_sobel_x) + 1.5 * np.abs(image_sobel_y)
-    image_sobel_xy = cv.convertScaleAbs(image_sobel_xy)
+    gray_img = cv.GaussianBlur(gray_img, (9, 9), 0)
+    image_sobel_xy = get_sobel(gray_img)
     cv.imwrite(os.path.join(save_dir, filename), np.abs(128 * np.ones(image_sobel_xy.shape) - image_sobel_xy))
     print(filename + 'is finished.')
+
+
+# 霓虹化
+def neno(img_path, save_dir):
+    filename = get_filename(img_path)
+    b, g, r = cv.split(cv.imread(img_path))
+    b = get_sobel(cv.GaussianBlur(b, (9, 9), 0))
+    g = get_sobel(cv.GaussianBlur(g, (9, 9), 0))
+    r = get_sobel(cv.GaussianBlur(r, (9, 9), 0))
+    cv.imwrite(os.path.join(save_dir, filename), cv.merge([b, g, r]))
