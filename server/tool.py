@@ -54,31 +54,11 @@ def img_matting(img_path, mask_dir, matted_dir):
             for j in range(0, result.shape[1]):  # 访问所有列
                 if mask[i][j] < 100:
                     result[i, j, 3] = 0
-        result = get_main_body(result, mask)
+        # result = get_main_body(result, mask)
         cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
         print(pure_img_name + " is finished.")
     except Exception as err:
         print(str(err))
-
-
-# 根据mask将背景色换为value值
-def change_backcolor(image, mask, value):
-    for i in range(image.shape[0]):
-        for j in range(image.shape[1]):
-            if mask[i, j] < 100:
-                image[i, j] = value
-    return image
-
-
-# 证件照功能
-def get_identification_image(img_path, mask_dir, matted_dir):
-    u2net.inference_img(img_path, mask_dir)
-    pure_img_name = get_filename(img_path)
-    result, mask = get_img_and(img_path, os.path.join(mask_dir, pure_img_name))
-
-    result = change_backcolor(result, mask, value=[0, 0, 255, 255])
-    cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
-    print(pure_img_name + "color changed.")
 
 
 # 油画，弃用
