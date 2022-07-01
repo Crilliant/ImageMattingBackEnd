@@ -15,7 +15,7 @@ def call_back(feature):
     print('==================' + str(filename) + '-----------------------------------------------')
     if os.path.exists(os.path.join(image_upload_path, str(filename))):
         os.remove(os.path.join(image_upload_path, str(filename)))
-        print('--------------------回调 remove upload----------------------')
+        print('--------------------remove upload----------------------')
     if os.path.exists(os.path.join(image_mask_path, str(filename))):
         os.remove(os.path.join(image_mask_path, str(filename)))
         print('--------------------remove mask-------------------')
@@ -56,7 +56,7 @@ def download_image():
 def delete():
     try:
         filename = request.get_json().get('filename')
-        print('++++++++++++++++' + filename)
+        print('------------------delete ' + filename + '----------------------')
         Thread(target=delete_image, args=(filename, thread_maps)).start()
         return jsonify({'status': 'success'})
     except Exception as err:

@@ -3,8 +3,6 @@
 # @Author : Cao Yuxin
 # @File : tool.py
 
-import numpy as np
-import cv2 as cv
 import server.u2net_test as u2net
 from server.utils import *
 
