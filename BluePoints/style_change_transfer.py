@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from concurrent.futures import ThreadPoolExecutor
-from server.tool import watercolor
+from server.style import *
 from BluePoints.utils import *
 
 
@@ -27,6 +27,41 @@ def change_to_watercolor():
         feature = executor.submit(watercolor, image_path, image_download_path)
         feature.add_done_callback(call_back)
         thread_maps.update({new_filename: feature})
+
+        return jsonify({'status': 'success', 'message': new_filename})
+    except Exception as err:
+        return jsonify({'status': 'failed', 'message': str(err)})
+
+
+# 素描效果
+@bp.route('/sketch', methods=['POST'])
+def change_to_sketch():
+    try:
+        image = request.files.get('file')
+        new_filename = generate_image_name()
+        image_path = os.path.join(image_upload_path, new_filename)
+        image.save(image_path)
+        feature = executor.submit(sketch, image_path, image_download_path)
+        feature.add_done_callback(call_back)
+        thread_maps.update({new_filename: feature})
+
+        return jsonify({'status': 'success', 'message': new_filename})
+    except Exception as err:
+        return jsonify({'status': 'failed', 'message': str(err)})
+
+
+# 霓虹效果
+@bp.route('/neno', methods=['POST'])
+def change_to_neno():
+    try:
+        image = request.files.get('file')
+        new_filename = generate_image_name()
+        image_path = os.path.join(image_upload_path, new_filename)
+        image.save(image_path)
+        feature = executor.submit(neno, image_path, image_download_path)
+        feature.add_done_callback(call_back)
+        thread_maps.update({new_filename: feature})
+
         return jsonify({'status': 'success', 'message': new_filename})
     except Exception as err:
         return jsonify({'status': 'failed', 'message': str(err)})
