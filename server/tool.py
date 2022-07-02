@@ -59,32 +59,6 @@ def img_matting(img_path, mask_dir, matted_dir):
         print(str(err))
 
 
-# 油画，弃用
-def oilpainting(img_dir, mask_dir, save_dir):
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-
-    for file in os.listdir(img_dir):
-        pure_img_name = file.split('.')[-2] + '.png'
-        if not os.path.exists(os.path.join(mask_dir, pure_img_name)):
-            print("no exist" + os.path.join(mask_dir, pure_img_name))
-            continue
-
-        img = cv.imread(os.path.join(img_dir, file))
-        result = cv.xphoto.oilPainting(img, 7, 1)
-        mask = cv.imread(os.path.join(mask_dir, pure_img_name))
-        result = cv.bitwise_and(result, mask)
-
-        mask = cv.cvtColor(mask, cv.COLOR_BGR2GRAY)  # 灰度图
-        result = cv.cvtColor(result, cv.COLOR_BGR2BGRA)  # 4通道
-
-        for i in range(0, result.shape[0]):  # 访问所有行
-            for j in range(0, result.shape[1]):  # 访问所有列
-                if mask[i][j] < 100:
-                    result[i, j, 3] = 1
-        cv.imwrite(os.path.join(save_dir, pure_img_name), result)
-        print(file + " is finished.")
-
 
 def overlap(top_path, btm_path, save_dir):
     if not os.path.exists(save_dir):
@@ -106,3 +80,11 @@ def overlap(top_path, btm_path, save_dir):
                 top[i][j][3] = 255
 
     cv.imwrite(os.path.join(save_dir, img_name), top)
+
+
+if __name__ == "__main__":
+    img_dir = r'E:\Code\u2_net\U-2-Net\test_data\test_human_images'
+    save_dir = r'E:\Code\u2_net\U-2-Net\test_data\mytest\watercolor/150_0.5'
+    mask_dir = r'E:\Code\u2_net\U-2-Net\test_data\u2netp_results'
+    watercolor(img_dir, save_dir)
+    # img_matting_dir(img_dir, mask_dir, save_dir)
