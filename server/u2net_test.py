@@ -10,7 +10,7 @@ from torchvision import transforms  # , utils
 # import torch.optim as optim
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ExifTags
 import glob
 
 from server.data_loader import RescaleT, ToTensor, ToTensorLab, SalObjDataset
@@ -37,8 +37,8 @@ def save_output(image_name, pred, d_dir):
 
     im = Image.fromarray(predict_np * 255).convert('RGB')
     img_name = image_name.split(os.sep)[-1]  # os.sep()分隔符/
-    image = io.imread(image_name)  # 读取图像rgb格式
-    imo = im.resize((image.shape[1], image.shape[0]), resample=Image.BILINEAR)
+    size = get_rotate_image_size(image_name)  # 读取图像rgb格式
+    imo = im.resize((size[1], size[0]), resample=Image.BILINEAR)
 
     pb_np = np.array(imo)
 
@@ -123,6 +123,25 @@ def inference_img(img_path, save_dir):
         save_output(img_name_list[i_test], pred, prediction_dir)
 
         del d1, d2, d3, d4, d5, d6, d7
+
+
+def get_rotate_image_size(image_path):
+    img = Image.open(image_path)
+    try:
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation] == 'Orientation':
+                break
+        exif = dict(img._getexif().items())
+        if exif[orientation] == 3:
+            img = img.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            img = img.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            img = img.rotate(90, expand=True)
+    except:
+        pass
+
+    return np.array(img).shape
 
 
 if __name__ == "__main__":
