@@ -59,7 +59,6 @@ def img_matting(img_path, mask_dir, matted_dir):
         print(str(err))
 
 
-
 def overlap(top_path, btm_path, save_dir):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
@@ -80,11 +79,3 @@ def overlap(top_path, btm_path, save_dir):
                 top[i][j][3] = 255
 
     cv.imwrite(os.path.join(save_dir, img_name), top)
-
-
-if __name__ == "__main__":
-    img_dir = r'E:\Code\u2_net\U-2-Net\test_data\test_human_images'
-    save_dir = r'E:\Code\u2_net\U-2-Net\test_data\mytest\watercolor/150_0.5'
-    mask_dir = r'E:\Code\u2_net\U-2-Net\test_data\u2netp_results'
-    watercolor(img_dir, save_dir)
-    # img_matting_dir(img_dir, mask_dir, save_dir)
