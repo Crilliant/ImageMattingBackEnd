@@ -1,6 +1,7 @@
 import os
 import torch
 from torch.autograd import Variable
+from torch.utils.data import DataLoader
 from torchvision import transforms
 from PIL import Image
 from server.data_loader import RescaleT, ToTensorLab, SalObjData
@@ -83,6 +84,7 @@ def inference_img(img_path, save_dir):
     print("inferencing:", img_path)
 
     inputs_test, _, image_shape = salobj_data.get()
+    inputs_test = inputs_test.unsqueeze(dim=0)
     inputs_test = inputs_test.type(torch.FloatTensor)
 
     if torch.cuda.is_available():
