@@ -14,13 +14,13 @@ class RescaleT(object):
         self.output_size = output_size
 
     def __call__(self, sample):
-        image, label = sample.get('image'), sample.get('label')
+        image, label = sample['image'], sample['label']
 
         img = transform.resize(image, (self.output_size, self.output_size), mode='constant')
         lbl = transform.resize(label, (self.output_size, self.output_size), mode='constant', order=0,
                                preserve_range=True)
 
-        return img, lbl
+        return {'image': img, 'label': lbl}
 
 
 class ToTensorLab(object):
@@ -30,7 +30,7 @@ class ToTensorLab(object):
         self.flag = flag
 
     def __call__(self, sample):
-        image, label = sample.get('image'), sample.get('label')
+        image, label = sample['image'], sample['label']
         tmp_lbl = np.zeros(label.shape)
 
         if np.max(label) < 1e-6:
@@ -56,7 +56,7 @@ class ToTensorLab(object):
         tmp_img = tmp_img.transpose((2, 0, 1))
         tmp_lbl = label.transpose((2, 0, 1))
 
-        return torch.from_numpy(tmp_img), torch.from_numpy(tmp_lbl)
+        return {'image': torch.from_numpy(tmp_img), 'label': torch.from_numpy(tmp_lbl)}
 
 
 class SalObjData:
@@ -79,7 +79,7 @@ class SalObjData:
         if self.transform:
             sample = self.transform(sample)
 
-        return sample.get('image'), sample.get('label'), image.shape
+        return sample['image'], sample['label'], image.shape
 
 
 def get_rotate_image(image_path):
