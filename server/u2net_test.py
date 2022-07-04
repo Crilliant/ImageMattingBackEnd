@@ -9,8 +9,10 @@ import numpy as np
 
 
 # normalize the predicted SOD probability map
-def normPRED(d):
+def norm_pred(d):
+    # noinspection PyUnresolvedReferences
     ma = torch.max(d)
+    # noinspection PyUnresolvedReferences
     mi = torch.min(d)
 
     dn = (d - mi) / (ma - mi)
@@ -47,6 +49,7 @@ def get_mask(pred, shape):
     im = Image.fromarray(predict_np * 255).convert('L')
     imo = im.resize((shape[1], shape[0]), resample=Image.BILINEAR)
 
+    # noinspection PyTypeChecker
     return np.array(imo)
 
 
@@ -84,6 +87,7 @@ def inference_img(img_path, save_dir):
 
     inputs_test, _, image_shape = salobj_data.get()
     inputs_test = inputs_test.unsqueeze(dim=0)
+    # noinspection PyUnresolvedReferences
     inputs_test = inputs_test.type(torch.FloatTensor)
 
     if torch.cuda.is_available():
@@ -97,7 +101,7 @@ def inference_img(img_path, save_dir):
 
     # normalization
     pred = d1[:, 0, :, :]
-    pred = normPRED(pred)  # 概率均匀映射到[0, 1]
+    pred = norm_pred(pred)  # 概率均匀映射到[0, 1]
 
     # save_output(img_path, pred, save_dir, image_shape)
     del d1, d2, d3, d4, d5, d6, d7

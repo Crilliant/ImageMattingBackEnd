@@ -56,6 +56,7 @@ class ToTensorLab(object):
         tmp_img = tmp_img.transpose((2, 0, 1))
         tmp_lbl = label.transpose((2, 0, 1))
 
+        # noinspection PyUnresolvedReferences
         return {'image': torch.from_numpy(tmp_img), 'label': torch.from_numpy(tmp_lbl)}
 
 
@@ -98,4 +99,5 @@ def get_rotate_image(image_path):
     except:
         pass
 
+    # noinspection PyTypeChecker
     return np.array(img)
