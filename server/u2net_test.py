@@ -16,7 +16,7 @@ def normPRED(d):
     dn = (d - mi) / (ma - mi)
     for i in range(dn.shape[1] - 1):
         for j in range(dn.shape[2] - 1):
-            if dn[0][i][j] > 0.8:
+            if dn[0][i][j] > 0.5:
                 dn[0][i][j] = 1
             else:
                 dn[0][i][j] = 0
