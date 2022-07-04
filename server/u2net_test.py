@@ -1,11 +1,11 @@
 import os
 import torch
 from torch.autograd import Variable
-from torch.utils.data import DataLoader
 from torchvision import transforms
 from PIL import Image
 from server.data_loader import RescaleT, ToTensorLab, SalObjData
 from server.model import U2NETP
+import numpy as np
 
 
 # normalize the predicted SOD probability map
@@ -14,12 +14,12 @@ def normPRED(d):
     mi = torch.min(d)
 
     dn = (d - mi) / (ma - mi)
-    for i in range(dn.shape[1] - 1):
-        for j in range(dn.shape[2] - 1):
-            if dn[0][i][j] > 0.5:
-                dn[0][i][j] = 1
-            else:
-                dn[0][i][j] = 0
+    # for i in range(dn.shape[1] - 1):
+    #    for j in range(dn.shape[2] - 1):
+    #        if dn[0][i][j] > 0.5:
+    #            dn[0][i][j] = 1
+    #        else:
+    #            dn[0][i][j] = 0
 
     return dn
 
@@ -44,10 +44,10 @@ def get_mask(pred, shape):
     predict = predict.squeeze()
     predict_np = predict.cpu().data.numpy()
 
-    im = Image.fromarray(predict_np * 255).convert('RGB')
+    im = Image.fromarray(predict_np * 255).convert('L')
     imo = im.resize((shape[1], shape[0]), resample=Image.BILINEAR)
 
-    return imo
+    return np.array(imo)
 
 
 # 单张图片，生成掩码png
@@ -57,12 +57,11 @@ def inference_img(img_path, save_dir):
 
     model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'saved_models', model_name,
                              model_name + '.pth')
-    img_name = img_path  # 单张图片
-    print(img_name)
+    print(img_path)
 
     # --------- 2. dataloader ---------
     # 1. dataloader
-    salobj_data = SalObjData(img_path=img_name,
+    salobj_data = SalObjData(img_path=img_path,
                              transform=transforms.Compose([RescaleT(320),
                                                            ToTensorLab(flag=0)])
                              )
@@ -100,9 +99,9 @@ def inference_img(img_path, save_dir):
     pred = d1[:, 0, :, :]
     pred = normPRED(pred)  # 概率均匀映射到[0, 1]
 
-    save_output(img_path, pred, save_dir, image_shape)
+    # save_output(img_path, pred, save_dir, image_shape)
     del d1, d2, d3, d4, d5, d6, d7
-    # return get_mask(img_path, pred, image_shape)
+    return get_mask(pred, image_shape)
 
 
 if __name__ == "__main__":
