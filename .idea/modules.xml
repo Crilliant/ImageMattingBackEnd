@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ImageMatting_BackService.iml" filepath="$PROJECT_DIR$/.idea/ImageMatting_BackService.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ImageMattingBackEnd.iml" filepath="$PROJECT_DIR$/.idea/ImageMattingBackEnd.iml" />
     </modules>
   </component>
 </project>
