@@ -50,26 +50,4 @@ def img_matting(img_path, mask_dir, matted_dir):
         cv.imwrite(os.path.join(matted_dir, pure_img_name), result)
         print(pure_img_name + " is finished.")
     except Exception as err:
-        print(str(err))
-
-
-def overlap(top_path, btm_path, save_dir):
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-
-    img_name = top_path.split('/')[-1]
-
-    top = cv.imread(top_path, cv.IMREAD_UNCHANGED)  # 读取四通道
-    btm = cv.imread(btm_path)
-
-    btm = cv.resize(btm, (top.shape[1], top.shape[0]))
-    print("top and btm shapes:")
-    print(top.shape)
-    print(btm.shape)
-    for i in range(0, top.shape[0]):  # 访问所有行
-        for j in range(0, top.shape[1]):  # 访问所有列
-            if top[i][j][3] == 0:
-                top[i][j][:3] = btm[i][j][:3]
-                top[i][j][3] = 255
-
-    cv.imwrite(os.path.join(save_dir, img_name), top)
+        raise err
