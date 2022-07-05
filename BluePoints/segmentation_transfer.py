@@ -26,6 +26,9 @@ def get_segmentation_image():
     from BluePoints.utils import thread_maps
     try:
         img = request.files.get('file')
+        if not allowed_file(img.filename):
+            return jsonify({'status': 'failed', 'message': 'file type error'})
+
         new_filename = generate_image_name()
         image_path = os.path.join(image_upload_path, new_filename)
         img.save(image_path)

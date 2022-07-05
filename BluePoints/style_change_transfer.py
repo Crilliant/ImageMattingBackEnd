@@ -22,6 +22,8 @@ def change_to_watercolor():
     from BluePoints.utils import thread_maps
     try:
         image = request.files.get('file')
+        if not allowed_file(image.filename):
+            return jsonify({'status': 'failed', 'message': 'file type error'})
         new_filename = generate_image_name()
         image_path = os.path.join(image_upload_path, new_filename)
         image.save(image_path)
@@ -40,6 +42,9 @@ def change_to_sketch():
     from BluePoints.utils import thread_maps
     try:
         image = request.files.get('file')
+        if not allowed_file(image.filename):
+            return jsonify({'status': 'failed', 'message': 'file type error'})
+
         new_filename = generate_image_name()
         image_path = os.path.join(image_upload_path, new_filename)
         image.save(image_path)
@@ -58,6 +63,9 @@ def change_to_neno():
     from BluePoints.utils import thread_maps
     try:
         image = request.files.get('file')
+        if not allowed_file(image.filename):
+            return jsonify({'status': 'failed', 'message': 'file type error'})
+
         new_filename = generate_image_name()
         image_path = os.path.join(image_upload_path, new_filename)
         image.save(image_path)

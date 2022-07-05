@@ -5,14 +5,14 @@ from threading import Thread
 import time
 
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'JPG', 'PNG'}
+ALLOWED_EXTENSIONS = ['png', 'jpg', 'JPG', 'PNG', 'jpeg', 'JPEG']
 
 thread_maps = dict()
 
 
 # 判断是否是允许的文件类型
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1) in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[-1] in ALLOWED_EXTENSIONS
 
 
 # 产生随机数作为文件名
