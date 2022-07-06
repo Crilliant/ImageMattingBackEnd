@@ -19,7 +19,7 @@ def watercolor(img_path, save_dir):
 def sketch(img_path, save_dir):
     try:
         gray_img = cv.cvtColor(cv.imread(img_path), cv.COLOR_BGR2GRAY)
-        filename = get_filename(img_path)
+        filename = get_filename(img_path, False)
         gray_img = cv.GaussianBlur(gray_img, (9, 9), 0)
         image_sobel_xy = get_sobel(gray_img)
         cv.imwrite(os.path.join(save_dir, filename), np.abs(128 * np.ones(image_sobel_xy.shape) - image_sobel_xy))
