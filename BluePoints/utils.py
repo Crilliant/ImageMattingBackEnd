@@ -5,7 +5,7 @@ from threading import Thread
 import time
 
 
-ALLOWED_EXTENSIONS = ['png', 'jpg', 'JPG', 'PNG', 'jpeg', 'JPEG']
+ALLOWED_EXTENSIONS = ['png', 'jpg', 'JPG', 'PNG', 'jpeg', 'JPEG', 'tif', 'TIF', 'jpe', 'JPE', 'bmp', 'BMP']
 
 thread_maps = dict()
 
