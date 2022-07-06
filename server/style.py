@@ -4,13 +4,13 @@ from server.utils import *
 # 水彩化
 def watercolor(img_path, save_dir):
     try:
-        pure_img_name = get_filename(img_path)
-        print(pure_img_name)
+        filename = get_filename(img_path, False)
+        print(filename)
         img = cv.imread(img_path)
         result = cv.stylization(img, sigma_s=200, sigma_r=0.6)
         print(save_dir)
-        cv.imwrite(os.path.join(save_dir, pure_img_name), result)
-        print(pure_img_name + " is finished.")
+        cv.imwrite(os.path.join(save_dir, filename), result)
+        print(filename + " is finished.")
     except Exception as err:
         raise err
 
@@ -31,7 +31,8 @@ def sketch(img_path, save_dir):
 # 霓虹化
 def neno(img_path, save_dir):
     try:
-        filename = get_filename(img_path)
+        # filename = get_filename(img_path)
+        filename = get_filename(img_path, False)
         b, g, r = cv.split(cv.imread(img_path))
         b = get_sobel(cv.GaussianBlur(b, (9, 9), 0))
         g = get_sobel(cv.GaussianBlur(g, (9, 9), 0))
