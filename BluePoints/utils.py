@@ -16,7 +16,7 @@ def allowed_file(filename):
 
 
 # 产生随机数作为文件名
-def generate_image_name():
+def generate_image_name(is_png=True):
     now_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     rand = random.randint(0, 1000)
     if rand < 10:
@@ -25,8 +25,12 @@ def generate_image_name():
         rand = str(0) + str(rand)
     else:
         rand = str(rand)
+    if is_png:
+        return now_time + rand + '.png'
+    else:
+        return now_time + rand + '.jpg'
 
-    return now_time + rand + '.png'
+
 
 
 # 删除已处理的图片的线程目标

@@ -24,7 +24,7 @@ def change_to_watercolor():
         image = request.files.get('file')
         if not allowed_file(image.filename):
             return jsonify({'status': 'failed', 'message': 'file type error'})
-        new_filename = generate_image_name()
+        new_filename = generate_image_name(False)
         image_path = os.path.join(image_upload_path, new_filename)
         image.save(image_path)
         feature = executor.submit(watercolor, image_path, image_download_path)
@@ -45,7 +45,7 @@ def change_to_sketch():
         if not allowed_file(image.filename):
             return jsonify({'status': 'failed', 'message': 'file type error'})
 
-        new_filename = generate_image_name()
+        new_filename = generate_image_name(False)
         image_path = os.path.join(image_upload_path, new_filename)
         image.save(image_path)
         feature = executor.submit(sketch, image_path, image_download_path)
@@ -66,7 +66,7 @@ def change_to_neno():
         if not allowed_file(image.filename):
             return jsonify({'status': 'failed', 'message': 'file type error'})
 
-        new_filename = generate_image_name()
+        new_filename = generate_image_name(False)
         image_path = os.path.join(image_upload_path, new_filename)
         image.save(image_path)
         feature = executor.submit(neno, image_path, image_download_path)
