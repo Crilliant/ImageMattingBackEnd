@@ -6,11 +6,11 @@ from BluePoints.utils import *
 
 bp = Blueprint('segmentation_transfer', __name__, url_prefix='/api/image')
 executor = ThreadPoolExecutor(2)
-thread_maps = dict()
 
 
 # 线程池中线程的回调函数
 def call_back(feature):
+    from BluePoints.utils import thread_maps
     filename = [k for k, v in thread_maps.items() if v == feature][0]
     print('==================' + str(filename) + '-----------------------------------------------')
     if os.path.exists(os.path.join(image_upload_path, str(filename))):
@@ -23,8 +23,12 @@ def call_back(feature):
 
 @bp.route('/segmentation', methods=['POST'])
 def get_segmentation_image():
+    from BluePoints.utils import thread_maps
     try:
         img = request.files.get('file')
+        if not allowed_file(img.filename):
+            return jsonify({'status': 'failed', 'message': 'file type error'})
+
         new_filename = generate_image_name()
         image_path = os.path.join(image_upload_path, new_filename)
         img.save(image_path)
@@ -39,13 +43,16 @@ def get_segmentation_image():
 
 @bp.route('/download', methods=['POST', 'GET'])
 def download_image():
+    from BluePoints.utils import thread_maps
     try:
         filename = request.get_json().get('filename')
-        filepath = os.path.join(image_download_path, filename)
-        if os.path.exists(filepath):
+        feature = thread_maps[filename]
+        if feature.done() and feature.exception() is None:
             url = 'http://' + request.headers.get('host') + '/static/Download/' + filename
             print(url)
             return jsonify({'status': 'success', 'url': url})
+        elif feature.done() and feature.exception():
+            return jsonify({'status': 'failed', 'message': str(feature.exception())})
         else:
             return jsonify({'status': 'wait', 'time': 5})
     except Exception as err:
@@ -54,6 +61,7 @@ def download_image():
 
 @bp.route('/delete', methods=['POST'])
 def delete():
+    from BluePoints.utils import thread_maps
     try:
         filename = request.get_json().get('filename')
         print('------------------delete ' + filename + '----------------------')

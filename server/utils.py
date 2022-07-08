@@ -3,9 +3,12 @@ import numpy as np
 import cv2 as cv
 
 
-def get_filename(img_path):
+def get_filename(img_path, is_png=True):
     pure_img_name = os.path.basename(img_path)
-    pure_img_name = pure_img_name.split('.')[-2] + ".png"
+    if is_png:
+        pure_img_name = pure_img_name.split('.')[-2] + ".png"
+    else:
+        pure_img_name = pure_img_name.split('.')[-2] + ".jpg"
     return pure_img_name
 
 

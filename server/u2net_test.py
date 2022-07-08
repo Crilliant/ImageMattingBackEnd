@@ -1,99 +1,77 @@
 import os
-from skimage import io, transform
 import torch
-import torchvision
 from torch.autograd import Variable
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms  # , utils
-# import torch.optim as optim
-
+from torchvision import transforms
+from PIL import Image
+from server.data_loader import RescaleT, ToTensorLab, SalObjData
+from server.model import U2NETP
 import numpy as np
-from PIL import Image, ExifTags
-import glob
 
-from server.data_loader import RescaleT, ToTensor, ToTensorLab, SalObjDataset
-from server.model import U2NET, U2NETP  # full size version 173.6 MB
-
-# from data_loader import RescaleT, ToTensor, ToTensorLab, SalObjDataset
-# from model import U2NET, U2NETP  # full size version 173.6 MB
-
-
-# from model import U2NETP    # small version u2net 4.7 MB
 
 # normalize the predicted SOD probability map
-def normPRED(d):
+def norm_pred(d):
+    # noinspection PyUnresolvedReferences
     ma = torch.max(d)
+    # noinspection PyUnresolvedReferences
     mi = torch.min(d)
 
     dn = (d - mi) / (ma - mi)
-    for i in range(dn.shape[1]-1):
-        for j in range(dn.shape[2]-1):
-            if dn[0][i][j] > 0.8:
-                dn[0][i][j] = 1
-            else:
-                dn[0][i][j] = 0
+    # for i in range(dn.shape[1] - 1):
+    #    for j in range(dn.shape[2] - 1):
+    #        if dn[0][i][j] > 0.5:
+    #            dn[0][i][j] = 1
+    #        else:
+    #            dn[0][i][j] = 0
 
     return dn
 
 
-# image_name为原图路径
-def save_output(image_name, pred, d_dir):
+def save_output(image_path, pred, d_dir, shape):
     predict = pred
     predict = predict.squeeze()
     predict_np = predict.cpu().data.numpy()
 
     im = Image.fromarray(predict_np * 255).convert('RGB')
 
-    img_name = image_name.split(os.sep)[-1]  # os.sep()分隔符/
-    size = get_rotate_image_size(image_name)  # 读取图像rgb格式
-    imo = im.resize((size[1], size[0]), resample=Image.BILINEAR)
+    imo = im.resize((shape[1], shape[0]), resample=Image.BILINEAR)
 
-
-    pb_np = np.array(imo)
-
-
-    pure_img_name = os.path.basename(image_name)
+    pure_img_name = os.path.basename(image_path)
     pure_img_name = pure_img_name.split('.')[-2] + ".png"
 
     imo.save(d_dir + "/" + pure_img_name)
 
 
+def get_mask(pred, shape):
+    predict = pred
+    predict = predict.squeeze()
+    predict_np = predict.cpu().data.numpy()
+
+    im = Image.fromarray(predict_np * 255).convert('L')
+    imo = im.resize((shape[1], shape[0]), resample=Image.BILINEAR)
+
+    # noinspection PyTypeChecker
+    return np.array(imo)
+
+
 # 单张图片，生成掩码png
 def inference_img(img_path, save_dir):
     # --------- 1. get image path and name ---------
-    # model_name='u2net'
     model_name = 'u2netp'
 
-    # image_dir = os.path.join(os.getcwd(), 'test_data', 'test_images')
-    # prediction_dir = os.path.join(os.getcwd(), 'test_data', model_name + '_results' + os.sep)
-    prediction_dir = save_dir
     model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'saved_models', model_name,
                              model_name + '.pth')
-    # img_name_list = glob.glob(image_dir + os.sep + '*')     # glob.glob()返回匹配的路径名列表
-    img_name_list = glob.glob(img_path)  # 单张图片
-    print(img_name_list)
+    print(img_path)
 
     # --------- 2. dataloader ---------
     # 1. dataloader
-    test_salobj_dataset = SalObjDataset(img_name_list=img_name_list,
-                                        lbl_name_list=[],
-                                        transform=transforms.Compose([RescaleT(320),
-                                                                      ToTensorLab(flag=0)])
-                                        )
-    test_salobj_dataloader = DataLoader(test_salobj_dataset,
-                                        batch_size=1,
-                                        shuffle=False,
-                                        num_workers=1)
+    salobj_data = SalObjData(img_path=img_path,
+                             transform=transforms.Compose([RescaleT(320),
+                                                           ToTensorLab(flag=0)])
+                             )
 
     # --------- 3. model define ---------
-    if (model_name == 'u2net'):
-        print("...load U2NET---173.6 MB")
-        net = U2NET(3, 1)
-    elif (model_name == 'u2netp'):
-        print("...load U2NEP---4.7 MB")
-        net = U2NETP(3, 1)
+    print("...load U2NEP---4.7 MB")
+    net = U2NETP(3, 1)
 
     if torch.cuda.is_available():
         print("use cuda")
@@ -105,54 +83,32 @@ def inference_img(img_path, save_dir):
     net.eval()
 
     # --------- 4. inference for each image ---------
-    for i_test, data_test in enumerate(test_salobj_dataloader):
+    print("inferencing:", img_path)
 
-        print("inferencing:", img_name_list[i_test].split(os.sep)[-1])
+    inputs_test, _, image_shape = salobj_data.get()
+    inputs_test = inputs_test.unsqueeze(dim=0)
+    # noinspection PyUnresolvedReferences
+    inputs_test = inputs_test.type(torch.FloatTensor)
 
-        inputs_test = data_test['image']
-        inputs_test = inputs_test.type(torch.FloatTensor)
+    if torch.cuda.is_available():
+        inputs_test = Variable(inputs_test.cuda())
+    else:
+        inputs_test = Variable(inputs_test)
 
-        if torch.cuda.is_available():
-            inputs_test = Variable(inputs_test.cuda())
-        else:
-            inputs_test = Variable(inputs_test)
+    # RuntimeError: CuDNN error: CUDNN_STATUS_INTERNAL_ERROR
+    torch.backends.cudnn.benchmark = False
+    d1, d2, d3, d4, d5, d6, d7 = net(inputs_test)
 
-        # RuntimeError: CuDNN error: CUDNN_STATUS_INTERNAL_ERROR
-        torch.backends.cudnn.benchmark = False
-        d1, d2, d3, d4, d5, d6, d7 = net(inputs_test)
+    # normalization
+    pred = d1[:, 0, :, :]
+    pred = norm_pred(pred)  # 概率均匀映射到[0, 1]
 
-        # normalization
-        pred = d1[:, 0, :, :]
-        pred = normPRED(pred)   # 概率均匀映射到[0, 1]
-
-
-        # save results to test_results folder
-        if not os.path.exists(prediction_dir):
-            os.makedirs(prediction_dir, exist_ok=True)
-        save_output(img_name_list[i_test], pred, prediction_dir)
-
-        del d1, d2, d3, d4, d5, d6, d7
-
-
-def get_rotate_image_size(image_path):
-    img = Image.open(image_path)
-    try:
-        for orientation in ExifTags.TAGS.keys():
-            if ExifTags.TAGS[orientation] == 'Orientation':
-                break
-        exif = dict(img._getexif().items())
-        if exif[orientation] == 3:
-            img = img.rotate(180, expand=True)
-        elif exif[orientation] == 6:
-            img = img.rotate(270, expand=True)
-        elif exif[orientation] == 8:
-            img = img.rotate(90, expand=True)
-    except:
-        pass
-
-    return np.array(img).shape
+    # save_output(img_path, pred, save_dir, image_shape)
+    del d1, d2, d3, d4, d5, d6, d7
+    return get_mask(pred, image_shape)
 
 
 if __name__ == "__main__":
     # torch.backends.cudnn.benchmark = True
-    inference_img(r'E:\Code\ImageMatting\BackEnd\server\test_data/test_images/alask.png', r'E:\Code\ImageMatting\BackEnd\server\test_data\mytest')
+    inference_img(r'E:\Code\ImageMatting\BackEnd\server\test_data/test_images/alask.png',
+                  r'E:\Code\ImageMatting\BackEnd\server\test_data\mytest')
